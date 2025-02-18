@@ -1,0 +1,270 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Andy Guessing Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-image: url("https://i.pinimg.com/736x/77/59/3d/77593d041303d2e0adc69f8266006bd1.jpg"):
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat; 
+            background-attachment: fixed;
+        }
+        .container {
+            margin-top: 50px;
+        }
+        .hidden {
+            display: none;
+        }
+        .button {
+            background: linear-gradient(to right, #b14eff, #6a00ff);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 10px;
+        }
+        .options button {
+            background: #d5a3ff;
+            border: none;
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 5px;
+            width: 200px;
+        }
+        .correct {
+            background-color: #6a00ff !important;
+            color: white;
+        }
+        .incorrect {
+            background-color: #888 !important;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+<div class="container" id="start-screen">
+    <h1>The Andy Guessing Game</h1>
+    <p>How well do you know Andy?</p>
+    <button class="button" onclick="startGame()">PLAY</button>
+</div>
+
+<div class="container hidden" id="question-screen">
+    <h2 id="question-text"></h2>
+    <p id="hint-text"></p>
+    <div class="options" id="options-container"></div>
+    <h2 id="feedback"></h2>
+    <button class="button hidden" id="next-btn" onclick="nextQuestion()">Next</button>
+</div>
+
+<div class="container hidden" id="end-screen">
+    <h1>Quiz Completed!</h1>
+    <p>You got <span id="score"></span> out of <span id="total-questions"></span> correct!</p>
+    <button class="button" onclick="restartGame()">Play Again</button>
+</div>
+
+<script>
+    let currentQuestionIndex = 0;
+    let score = 0;
+
+    const questions = [
+        {
+            question: "What is Andy’s full name?",
+            hint: "Hint: Just first and last name",
+            options: [
+                { text: "ANDY DUQUE - ESTRADA", correct: false },
+                { text: "ANDY DUQUE", correct: false },
+                { text: "ANDREA DUQUE - ESTRADA", correct: true },
+                { text: "ANDREA DUQUE", correct: false }
+            ]
+        },
+        {
+            question: "How many pets does Andy have?",
+            hint: "Hint: All of her pets are dogs",
+            options: [
+                { text: "Three", correct: false },
+                { text: "Two", correct: true },
+                { text: "Four", correct: false },
+                { text: "Six", correct: false }
+            ]
+        },  
+        {
+            question: "What is Andy Majoring in?",
+            hint: "Hint: It's in the communications school",
+            options: [
+                { text: "International Relations", correct: false },
+                { text: "Marketing", correct: false },
+                { text: "Media Management", correct: false },
+                { text: "Interactive Media", correct: true }
+            ]
+        },
+        {
+            question: "What sport did Andy play when she was little?",
+            hint: "Hint: It's a team sport",
+            options: [
+                { text: "Golf", correct: false },
+                { text: "Tennis", correct: false },
+                { text: "Soccer", correct: true },
+                { text: "Flag Football", correct: false}
+            ]
+        },
+        {
+            question: "Who was Andy's top artist on spotify wrapped?",
+            hint: "Hint: They dropped and album last year",
+            options: [
+                { text: "Rawayana", correct: false },
+                { text: "Ariana Grande", correct: true },
+                { text: "Harry Styles", correct: false },
+                { text: "Billie Eillish", correct: false}
+            ]
+        },
+        {
+            question: "What was Andy's top college choice?",
+            hint: "Hint: She didn't really care that much",
+            options: [
+                { text: "Vanderbilt", correct: true },
+                { text: "UMiami", correct: false },
+                { text: "Yale", correct: false },
+                { text: "Emory", correct: false}
+            ]
+        },
+        {
+            question: "Where does Andy have a scar?",
+            hint: "She got it when she was really young",
+            options: [
+                { text: "On her Chin", correct: false },
+                { text: "Next to her eye", correct: true },
+                { text: "Back of her head", correct: false },
+                { text: "On her knee", correct: false}
+            ]
+        },
+        {
+            question: "What was Andy's senior year play?",
+            hint: "It has an iconic dance",
+            options: [
+                { text: "Mamma Mia", correct: false },
+                { text: "Legally Blonde", correct: false },
+                { text: "High School Musical", correct: true },
+                { text: "Grease", correct: false}
+            ]
+        },
+        {
+            question: "Which Harry Potter house is Andy in?",
+            hint: "It's underrated",
+            options: [
+                { text: "Gryffindor", correct: false },
+                { text: "Slytherin", correct: false },
+                { text: "Ravenclaw", correct: false },
+                { text: "Hufflepuff", correct: true}
+            ]
+        },
+        {
+            question: "What is Andy's favorite Holiday?",
+            hint: "It happens during break",
+            options: [
+                { text: "Halloween", correct: false },
+                { text: "Christmas", correct: true },
+                { text: "4th of July", correct: false },
+                { text: "Valentines Day", correct: true}
+            ]
+        },
+        
+    ];
+
+    function startGame() {
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('question-screen').classList.remove('hidden');
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        const questionData = questions[currentQuestionIndex];
+        document.getElementById('question-text').innerText = questionData.question;
+        document.getElementById('hint-text').innerText = questionData.hint;
+
+        let optionsContainer = document.getElementById('options-container');
+        optionsContainer.innerHTML = "";
+        document.getElementById('feedback').innerText = "";
+        document.getElementById('next-btn').classList.add('hidden');
+
+        questionData.options.forEach(option => {
+            let button = document.createElement('button');
+            button.innerText = option.text;
+            button.onclick = () => checkAnswer(button, option.correct);
+            optionsContainer.appendChild(button);
+        });
+    }
+
+    function checkAnswer(button, isCorrect) {
+        let feedback = document.getElementById('feedback');
+        let buttons = document.querySelectorAll('.options button');
+
+        buttons.forEach(btn => btn.disabled = true);
+
+        if (isCorrect) {
+            feedback.innerText = "CORRECT!";
+            button.classList.add('correct');
+            score++; // Increase score if correct
+        } else {
+            feedback.innerText = "INCORRECT.";
+            button.classList.add('incorrect');
+        }
+
+        document.getElementById('next-btn').classList.remove('hidden'); // Always show Next button
+    }
+
+    function nextQuestion() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < questions.length) {
+            loadQuestion();
+        } else {
+            showResults();
+        }
+        
+        
+    }
+
+    function showResults() {
+        document.getElementById('question-screen').classList.add('hidden');
+        document.getElementById('end-screen').classList.remove('hidden');
+
+        let resultMessage = "";
+        if (score >= 10) {
+            resultMessage = "YOU ARE PRACTICALLY ANDY’S BEST FRIEND! You got " + score + " questions right!";
+        } else if (score >= 7) {
+            resultMessage = "YOU KNOW ANDY PRETTY WELL! You got " + score + " questions right!";
+        } else if (score >= 4) {
+            resultMessage = "NOT THERE JUST YET! You got " + score + " questions right!";
+        } else {
+            resultMessage = "UM, DO YOU KNOW WHO ANDY IS? You got " + score + " questions right!";
+        }
+
+        document.getElementById('end-screen').innerHTML = `
+        <h1>${resultMessage}</h1>
+        <button class="button" onclick="restartGame()">PLAY AGAIN</button>
+        <p>THANK YOU FOR PLAYING!</p>
+    `;
+
+        document.getElementById('score').innerText = score;
+        document.getElementById('total-questions').innerText = questions.length;
+    }
+
+
+    function restartGame() {
+        score = 0;
+        currentQuestionIndex = 0;
+        document.getElementById('end-screen').classList.add('hidden');
+        document.getElementById('start-screen').classList.remove('hidden');
+    }
+</script>
+</body>
+</html>
