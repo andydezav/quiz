@@ -7,20 +7,48 @@
     <title>The Andy Guessing Game</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-image: url("https://i.pinimg.com/736x/77/59/3d/77593d041303d2e0adc69f8266006bd1.jpg"):
+            font-family: "Inconsolata", "Helvetica", sans-serif;
+            background-image: url("https://i.pinimg.com/736x/e8/9f/c7/e89fc7c6d5c1e5ef29ad2869387515a0.jpg");
             background-size: cover;
             background-position: center;
-            background-repeat: no-repeat; 
+            background-repeat: no-repeat;
             background-attachment: fixed;
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            flex-direction: column;
         }
+
+        h1 {
+            font-size: 60px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        p {
+            font-size: 22px;
+            max-width: 800px;
+            line-height: 1.6;
+            margin: 10px 0;
+        }
+
         .container {
-            margin-top: 50px;
+            max-width: 900px;
+            padding: 40px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
         }
+
         .hidden {
             display: none;
         }
+
         .button {
             background: linear-gradient(to right, #b14eff, #6a00ff);
             color: white;
@@ -31,23 +59,62 @@
             border-radius: 5px;
             margin: 10px;
         }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px; 
+        }
+
         .options button {
+            width: 250px; 
+            height: 50px; 
+            font-size: 18px; 
+            text-align: center;
+            padding: 10px;
+            border-radius: 10px;
             background: #d5a3ff;
             border: none;
-            padding: 10px;
-            font-size: 16px;
             cursor: pointer;
-            border-radius: 5px;
-            margin: 5px;
-            width: 200px;
+            transition: background 0.3s ease-in-out;
         }
+
+        .options button:hover {
+            background: #b14eff;
+            color: white;
+        }
+
         .correct {
             background-color: #6a00ff !important;
             color: white;
         }
+
         .incorrect {
             background-color: #888 !important;
             color: white;
+        }
+
+        .progress-container {
+            width: 80%;
+            height: 20px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 0 auto;
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(to right, #b14eff, #6a00ff);
+            transition: width 0.5s ease-in-out;
+            
+            
         }
     </style>
 </head>
@@ -59,6 +126,9 @@
 </div>
 
 <div class="container hidden" id="question-screen">
+    <div class="progress-container">
+        <div class="progress-bar" id="progress-bar"></div>
+    </div>
     <h2 id="question-text"></h2>
     <p id="hint-text"></p>
     <div class="options" id="options-container"></div>
@@ -96,7 +166,7 @@
                 { text: "Four", correct: false },
                 { text: "Six", correct: false }
             ]
-        },  
+        },
         {
             question: "What is Andy Majoring in?",
             hint: "Hint: It's in the communications school",
@@ -174,7 +244,7 @@
                 { text: "Halloween", correct: false },
                 { text: "Christmas", correct: true },
                 { text: "4th of July", correct: false },
-                { text: "Valentines Day", correct: true}
+                { text: "Valentines Day", correct: false}
             ]
         },
         
@@ -183,6 +253,7 @@
     function startGame() {
         document.getElementById('start-screen').classList.add('hidden');
         document.getElementById('question-screen').classList.remove('hidden');
+        updateProgressBar();
         loadQuestion();
     }
 
@@ -200,6 +271,7 @@
             let button = document.createElement('button');
             button.innerText = option.text;
             button.onclick = () => checkAnswer(button, option.correct);
+            button.disabled = false; 
             optionsContainer.appendChild(button);
         });
     }
@@ -213,24 +285,29 @@
         if (isCorrect) {
             feedback.innerText = "CORRECT!";
             button.classList.add('correct');
-            score++; // Increase score if correct
+            score++;
         } else {
             feedback.innerText = "INCORRECT.";
             button.classList.add('incorrect');
         }
 
-        document.getElementById('next-btn').classList.remove('hidden'); // Always show Next button
+        document.getElementById('next-btn').classList.remove('hidden');
     }
 
     function nextQuestion() {
         currentQuestionIndex++;
+        updateProgressBar();
         if (currentQuestionIndex < questions.length) {
             loadQuestion();
         } else {
             showResults();
         }
-        
-        
+    }
+
+    function updateProgressBar() {
+        const progressBar = document.getElementById("progress-bar");
+        const progress = (currentQuestionIndex / questions.length) * 100;
+        progressBar.style.width = progress + "%";
     }
 
     function showResults() {
@@ -239,31 +316,32 @@
 
         let resultMessage = "";
         if (score >= 10) {
-            resultMessage = "YOU ARE PRACTICALLY ANDY’S BEST FRIEND! You got " + score + " questions right!";
+            resultMessage = "YOU ARE PRACTICALLY ANDY’S BEST FRIEND! <hr/> You got " + score + " questions right!";
         } else if (score >= 7) {
-            resultMessage = "YOU KNOW ANDY PRETTY WELL! You got " + score + " questions right!";
+            resultMessage = "YOU KNOW ANDY PRETTY WELL! <hr/> You got " + score + " questions right!";
         } else if (score >= 4) {
-            resultMessage = "NOT THERE JUST YET! You got " + score + " questions right!";
+            resultMessage = "NOT THERE JUST YET! <hr/> You got " + score + " questions right!";
         } else {
-            resultMessage = "UM, DO YOU KNOW WHO ANDY IS? You got " + score + " questions right!";
+            resultMessage = "UM, DO YOU KNOW WHO ANDY IS? <hr/> You got " + score + " questions right!";
         }
 
-        document.getElementById('end-screen').innerHTML = `
-        <h1>${resultMessage}</h1>
-        <button class="button" onclick="restartGame()">PLAY AGAIN</button>
-        <p>THANK YOU FOR PLAYING!</p>
-    `;
-
-        document.getElementById('score').innerText = score;
-        document.getElementById('total-questions').innerText = questions.length;
+        let endScreen = document.getElementById('end-screen');
+        endScreen.innerHTML = `
+    <h1 style="font-size: 30px; text-align: center;">${resultMessage}</h1>
+    <button class="button" onclick="restartGame()" style="display: block; margin: 20px auto;">PLAY AGAIN</button>
+    <p style="font-size: 18px; text-align: center; text-transform: lowercase; margin-top: 10px;">thank you for playing!</p>
+        `;
     }
 
 
     function restartGame() {
         score = 0;
+        score = 0;
         currentQuestionIndex = 0;
         document.getElementById('end-screen').classList.add('hidden');
-        document.getElementById('start-screen').classList.remove('hidden');
+        document.getElementById('question-screen').classList.remove('hidden');
+        document.getElementById("progress-bar").style.width = "0%";
+        loadQuestion(); 
     }
 </script>
 </body>
